@@ -1,4 +1,7 @@
+// Load environment variables FIRST - critical for Render deployment
+// In production (Render), env vars are set in dashboard, not .env file
 require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
@@ -7,6 +10,13 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
 const eventRoutes = require('./routes/events');
 const rsvpRoutes = require('./routes/rsvp');
+
+// Log startup info
+console.log('========================================');
+console.log('🚀 Starting Event Platform Backend...');
+console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`🔧 Port: ${process.env.PORT || 5000}`);
+console.log('========================================');
 
 const app = express();
 
