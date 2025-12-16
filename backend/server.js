@@ -27,13 +27,44 @@ connectDB();
 // MIDDLEWARE
 // ======================
 
-// CORS Configuration - Allow frontend to make requests
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+// Allowed origins for CORS
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'https://mern-assignment-plum.vercel.app',
+  process.env.CLIENT_URL
+].filter(Boolean); // Remove undefined/null values
+
+console.log('🔧 Allowed CORS origins:', allowedOrigins);
+
+// CORS Configuration - Production-ready with multiple origins
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, curl, etc.)
+    if (!origin) {
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`⚠️ CORS blocked origin: ${origin}`);
+      callback(new Error(`CORS policy: Origin ${origin} not allowed`));
+    }
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 86400, // Cache preflight for 24 hours
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions));
 
 // Parse JSON request bodies
 app.use(express.json());
